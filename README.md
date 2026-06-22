@@ -71,11 +71,11 @@ npx serve .
 
 | Dark mode          | Light mode           |
 |--------------------|----------------------|
-| ![](dark mode.png) | ![](light mode.png) |
+| ![](img/dark-mode.png) | ![](img/light-mode.png) |
 
 ### Password History
 
-![](History.png)
+![](img/history.png)
 
 ## 🔐 Security Notes
 
