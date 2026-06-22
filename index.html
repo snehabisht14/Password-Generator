@@ -1,56 +1,213 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Password Generator</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.5/css/all.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PassForge — Password Generator</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 </head>
 
 <body>
-    <div class="container">
-        <h2 class="title">Password Generator</h2>
-        <div class="result">
-            <div class="result__title field-title">Generated Password</div>
-            <div class="result__info right">click to copy</div>
-            <div class="result__info left">copied</div>
-            <div class="result__viewbox" id="result">CLICK GENERATE</div>
-            <button id="copy-btn" style="--x: 0; --y: 0"><i class="far fa-copy"></i></button>
-        </div>
-        <div class="length range__slider" data-min="4" data-max="32">
-            <div class="length__title field-title" data-length='0'>length:</div>
-            <input id="slider" type="range" min="4" max="32" value="16" />
-        </div>
+    <!-- Toast Notification -->
+    <div id="toast" class="toast" aria-live="polite"></div>
 
-        <div class="settings">
-            <span class="settings__title field-title">settings</span>
-            <div class="setting">
-                <input type="checkbox" id="uppercase" checked />
-                <label for="uppercase">Include Uppercase</label>
-            </div>
-            <div class="setting">
-                <input type="checkbox" id="lowercase" checked />
-                <label for="lowercase">Include Lowercase</label>
-            </div>
-            <div class="setting">
-                <input type="checkbox" id="number" checked />
-                <label for="number">Include Numbers</label>
-            </div>
-            <div class="setting">
-                <input type="checkbox" id="symbol" />
-                <label for="symbol">Include Symbols</label>
-            </div>
-        </div>
+    <!-- Theme Toggle -->
+    <button id="theme-toggle" class="theme-toggle" title="Toggle Dark/Light mode (Alt+T)" aria-label="Toggle theme">
+    <i class="fas fa-moon" id="theme-icon"></i>
+  </button>
 
-        <button class="btn generate" id="generate">Generate Password</button>
+    <!-- Keyboard Shortcut Hint -->
+    <div class="shortcut-hint" id="shortcut-hint">
+        <span>Press <kbd>G</kbd> to generate &nbsp;·&nbsp; <kbd>C</kbd> to copy &nbsp;·&nbsp; <kbd>Alt+T</kbd> for theme</span>
+        <button class="shortcut-close" id="shortcut-close" aria-label="Dismiss"><i class="fas fa-times"></i></button>
     </div>
 
-    <script src="js/script.js"></script>
+    <main class="app-wrapper">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <span class="logo-icon"><i class="fas fa-shield-halved"></i></span>
+                <h1>PassForge</h1>
+            </div>
+            <p class="tagline">Craft unbreakable passwords</p>
+        </header>
 
+        <!-- Tab Navigation -->
+        <nav class="tabs" role="tablist">
+            <button class="tab active" data-tab="password" role="tab" aria-selected="true">
+        <i class="fas fa-key"></i> Password
+      </button>
+            <button class="tab" data-tab="passphrase" role="tab" aria-selected="false">
+        <i class="fas fa-comment-dots"></i> Passphrase
+      </button>
+            <button class="tab" data-tab="history" role="tab" aria-selected="false">
+        <i class="fas fa-clock-rotate-left"></i> History
+        <span class="badge" id="history-badge">0</span>
+      </button>
+        </nav>
+
+        <!-- ── TAB: Password ── -->
+        <section class="tab-panel active" id="tab-password" role="tabpanel">
+
+            <!-- Result Box -->
+            <div class="result-card">
+                <div class="result-label">Generated Password</div>
+                <div class="result-display" id="result" tabindex="0" title="Click to copy">CLICK GENERATE</div>
+                <div class="result-actions">
+                    <button class="icon-btn" id="copy-btn" title="Copy (C)" aria-label="Copy password">
+            <i class="fas fa-copy"></i>
+          </button>
+                    <button class="icon-btn" id="refresh-btn" title="Generate new (G)" aria-label="Generate new password">
+            <i class="fas fa-rotate-right"></i>
+          </button>
+                </div>
+            </div>
+
+            <!-- Strength Meter -->
+            <div class="strength-section">
+                <span class="strength-label">Strength</span>
+                <div class="strength-bar-track">
+                    <div class="strength-bar" id="strength-bar"></div>
+                </div>
+                <span class="strength-text" id="strength-text">—</span>
+            </div>
+
+            <!-- Length Slider -->
+            <div class="control-group">
+                <label class="control-label" for="slider">
+          Length: <span id="length-display" class="mono-value">16</span>
+        </label>
+                <input id="slider" class="range-slider" type="range" min="4" max="64" value="16" aria-label="Password length" />
+                <div class="slider-limits"><span>4</span><span>64</span></div>
+            </div>
+
+            <!-- Character Options -->
+            <div class="options-grid">
+                <label class="option-card">
+          <input type="checkbox" id="uppercase" checked />
+          <span class="option-text"><i class="fas fa-font"></i> Uppercase <em>A–Z</em></span>
+        </label>
+                <label class="option-card">
+          <input type="checkbox" id="lowercase" checked />
+          <span class="option-text"><i class="fas fa-font" style="font-size:.8em"></i> Lowercase <em>a–z</em></span>
+        </label>
+                <label class="option-card">
+          <input type="checkbox" id="number" checked />
+          <span class="option-text"><i class="fas fa-hashtag"></i> Numbers <em>0–9</em></span>
+        </label>
+                <label class="option-card">
+          <input type="checkbox" id="symbol" />
+          <span class="option-text"><i class="fas fa-star-of-life"></i> Symbols <em>!@#…</em></span>
+        </label>
+                <label class="option-card option-card--wide">
+          <input type="checkbox" id="no-ambiguous" />
+          <span class="option-text"><i class="fas fa-eye-slash"></i> No ambiguous chars <em>(O 0 l I)</em></span>
+        </label>
+            </div>
+
+            <!-- Generate Button -->
+            <button class="btn-generate" id="generate">
+        <i class="fas fa-wand-magic-sparkles"></i> Generate Password
+      </button>
+
+            <!-- Export -->
+            <button class="btn-export" id="export-btn" title="Export current password as .txt">
+        <i class="fas fa-file-arrow-down"></i> Export Password
+      </button>
+        </section>
+
+        <!-- ── TAB: Passphrase ── -->
+        <section class="tab-panel" id="tab-passphrase" role="tabpanel" hidden>
+
+            <div class="result-card">
+                <div class="result-label">Generated Passphrase</div>
+                <div class="result-display result-display--phrase" id="phrase-result" tabindex="0">CLICK GENERATE</div>
+                <div class="result-actions">
+                    <button class="icon-btn" id="copy-phrase-btn" aria-label="Copy passphrase">
+            <i class="fas fa-copy"></i>
+          </button>
+                    <button class="icon-btn" id="refresh-phrase-btn" aria-label="Generate new passphrase">
+            <i class="fas fa-rotate-right"></i>
+          </button>
+                </div>
+            </div>
+
+            <!-- Strength Meter (phrase) -->
+            <div class="strength-section">
+                <span class="strength-label">Strength</span>
+                <div class="strength-bar-track">
+                    <div class="strength-bar" id="phrase-strength-bar"></div>
+                </div>
+                <span class="strength-text" id="phrase-strength-text">—</span>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="word-count">
+          Words: <span id="word-count-display" class="mono-value">4</span>
+        </label>
+                <input id="word-count" class="range-slider" type="range" min="3" max="10" value="4" aria-label="Number of words" />
+                <div class="slider-limits"><span>3</span><span>10</span></div>
+            </div>
+
+            <div class="options-grid">
+                <label class="option-card option-card--wide">
+          <input type="checkbox" id="phrase-numbers" checked />
+          <span class="option-text"><i class="fas fa-hashtag"></i> Add random numbers between words</span>
+        </label>
+                <label class="option-card option-card--wide">
+          <input type="checkbox" id="phrase-capitalize" checked />
+          <span class="option-text"><i class="fas fa-font"></i> Capitalize each word</span>
+        </label>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="separator">Separator</label>
+                <select id="separator" class="select-input">
+          <option value="-">Hyphen  –</option>
+          <option value=".">Dot  .</option>
+          <option value="_">Underscore  _</option>
+          <option value=" ">Space</option>
+          <option value="">None</option>
+        </select>
+            </div>
+
+            <button class="btn-generate" id="generate-phrase">
+        <i class="fas fa-wand-magic-sparkles"></i> Generate Passphrase
+      </button>
+
+            <button class="btn-export" id="export-phrase-btn">
+        <i class="fas fa-file-arrow-down"></i> Export Passphrase
+      </button>
+        </section>
+
+        <!-- ── TAB: History ── -->
+        <section class="tab-panel" id="tab-history" role="tabpanel" hidden>
+            <div class="history-toolbar">
+                <span class="history-count" id="history-count">0 passwords saved</span>
+                <div>
+                    <button class="btn-sm" id="export-history-btn"><i class="fas fa-file-arrow-down"></i> Export All</button>
+                    <button class="btn-sm btn-sm--danger" id="clear-history-btn"><i class="fas fa-trash"></i> Clear All</button>
+                </div>
+            </div>
+            <ul class="history-list" id="history-list">
+                <li class="history-empty">
+                    <i class="fas fa-clock-rotate-left fa-2x"></i>
+                    <p>No passwords yet. Generate some!</p>
+                </li>
+            </ul>
+        </section>
+    </main>
+
+    <script src="js/words.js"></script>
+    <script src="js/strength.js"></script>
+    <script src="js/generator.js"></script>
+    <script src="js/history.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
 </body>
 
 </html>
