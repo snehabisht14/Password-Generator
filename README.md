@@ -67,6 +67,16 @@ npx serve .
 
 ---
 
+## 📸 Project Preview
+
+| Dark mode          | Light mode           |
+|--------------------|----------------------|
+| ![](dark mode.png) | ![](light mode.png) |
+
+### Password History
+
+![](History.png)
+
 ## 🔐 Security Notes
 
 - Uses `window.crypto.getRandomValues()` for all randomness (cryptographically secure).
