@@ -75,7 +75,7 @@ npx serve .
 
 ### Password History
 
-![](img/history.png)
+![Password History](img/history.png)
 
 ## 🔐 Security Notes
 
