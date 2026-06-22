@@ -73,9 +73,6 @@ npx serve .
 |--------------------|----------------------|
 | ![](img/dark-mode.png) | ![](img/light-mode.png) |
 
-### Password History
-
-![Password History](img/history.png)
 
 ## 🔐 Security Notes
 
